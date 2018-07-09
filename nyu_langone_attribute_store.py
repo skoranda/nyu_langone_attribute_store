@@ -402,16 +402,20 @@ class NyuLangoneAttributeStore(satosa.micro_services.base.ResponseMicroService):
             satosa_logging(logger, logging.ERROR, msg, context.state)
             raise NyuLangoneAttributeStoreError(msg)
 
+        satosa_logging(logger, logging.DEBUG, "entityID for the authenticating IdP is {}".format(idp_entity_id), context.state)
+
         # If the IdP used for authentication is the NYU Langone IdP then strip
         # off the scope and assert the remaining part of the identifier.
         if idp_entity_id == 'https://login.nyumc.org/idp/shibboleth':
             for candidate in config['ordered_identifier_candidates']:
                 identifier_name = candidate['attribute_names'][0]
+                satosa_logging(logger, logging.DEBUG, "Using identifier with label {}".format(identifier_name), context.state)
                 identifier = data.attributes.get(identifier_name, None)
                 if not identifier:
                     msg = "Unable to find identifier %s asserted by NYU Langone IdP" % identifier_name
                     satosa_logging(logger, logging.ERROR, msg, context.state)
                     raise NyuLangoneAttributeStoreError(msg)
+                satosa_logging(logger, logging.DEBUG, "Using identifier value {}".format(identifier), context.state)
                 break
 
             kerberos_id, scope = identifier.split('@')
