@@ -69,7 +69,7 @@ class NyuLangoneAttributeStore(satosa.micro_services.base.ResponseMicroService):
         if 'default' in config and "" in config:
             msg = """Use either 'default' or "" in config but not both"""
             satosa_logging(logger, logging.ERROR, msg, None)
-            raise LdapAttributeStoreError(msg)
+            raise NyuLangoneAttributeStoreError(msg)
 
         if "" in config:
             config['default'] = config.pop("")
@@ -77,7 +77,7 @@ class NyuLangoneAttributeStore(satosa.micro_services.base.ResponseMicroService):
         if 'default' not in config:
             msg = "No default configuration is present"
             satosa_logging(logger, logging.ERROR, msg, None)
-            raise LdapAttributeStoreError(msg)
+            raise NyuLangoneAttributeStoreError(msg)
 
         self.config = {}
 
@@ -91,11 +91,11 @@ class NyuLangoneAttributeStore(satosa.micro_services.base.ResponseMicroService):
             if not isinstance(config[sp], dict):
                 msg = "Configuration value for {} must be a dictionary"
                 satosa_logging(logger, logging.ERROR, msg, None)
-                raise LdapAttributeStoreError(msg)
+                raise NyuLangoneAttributeStoreError(msg)
 
             # Initialize configuration using module defaults then update
             # with configuration defaults and then per-SP overrides.
-            sp_config = copy.deepcopy(LdapAttributeStore.config_defaults)
+            sp_config = copy.deepcopy(NyuLangoneAttributeStore.config_defaults)
             if 'default' in self.config:
                 sp_config.update(self.config['default'])
             sp_config.update(config[sp])
@@ -118,14 +118,14 @@ class NyuLangoneAttributeStore(satosa.micro_services.base.ResponseMicroService):
                     connections[connection_params] = connection
                     sp_config['connection'] = connection
                     satosa_logging(logger, logging.DEBUG, "Created new LDAP connection for SP {}".format(sp), None)
-                except LdapAttributeStoreError as e:
+                except NyuLangoneAttributeStoreError as e:
                     # It is acceptable to not have a default LDAP connection
                     # but all SP overrides must have a connection, either
                     # inherited from the default or directly configured.
                     if sp != 'default':
                         msg = "No LDAP connection can be initialized for SP {}".format(sp)
                         satosa_logging(logger, logging.ERROR, msg, None)
-                        raise LdapAttributeStoreError(msg)
+                        raise NyuLangoneAttributeStoreError(msg)
 
             self.config[sp] = sp_config
 
@@ -252,11 +252,11 @@ class NyuLangoneAttributeStore(satosa.micro_services.base.ResponseMicroService):
         bind_password = config['bind_password']
 
         if not ldap_url:
-            raise LdapAttributeStoreError("ldap_url is not configured")
+            raise NyuLangoneAttributeStoreError("ldap_url is not configured")
         if not bind_dn:
-            raise LdapAttributeStoreError("bind_dn is not configured")
+            raise NyuLangoneAttributeStoreError("bind_dn is not configured")
         if not bind_password:
-            raise LdapAttributeStoreError("bind_password is not configured")
+            raise NyuLangoneAttributeStoreError("bind_password is not configured")
 
         pool_size = config['pool_size']
         pool_keepalive = config['pool_keepalive']
@@ -476,7 +476,7 @@ class NyuLangoneAttributeStore(satosa.micro_services.base.ResponseMicroService):
                     break
         except LDAPException as err:
             satosa_logging(logger, logging.ERROR, "Caught LDAP exception: {}".format(err), context.state)
-        except LdapAttributeStoreError as err:
+        except NyuLangoneAttributeStoreError as err:
             satosa_logging(logger, logging.ERROR, "Caught LDAP Attribute Store exception: {}".format(err), context.state)
         except Exception as err:
             satosa_logging(logger, logging.ERROR, "Caught unhandled exception: {}".format(err), context.state)
