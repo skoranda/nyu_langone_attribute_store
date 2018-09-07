@@ -521,6 +521,9 @@ class NyuLangoneAttributeStore(satosa.micro_services.base.ResponseMicroService):
                 match = re.search('^.+:(EXT\d+)$', voPersonApplicationUID)
                 uid = match.group(1)
                 data.attributes['uid'] = uid
+                msg = "Parsed {} and asserting value {} for uid"
+                msg.format(ATTR_KEY, uid)
+                satosa_logging(logger, logging.DEBUG, msg, context.state)
             except (KeyError, AttributeError):
                 msg = "{} value did not match expected pattern"
                 msg = msg.format(ATTR_KEY),
