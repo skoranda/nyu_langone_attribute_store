@@ -516,18 +516,19 @@ class NyuLangoneAttributeStore(satosa.micro_services.base.ResponseMicroService):
             # Provisioner in COmanage change voPersonApplicationUID to 
             # voPersonApplicationUID;app-rn.
             ATTR_KEY = 'voPersonApplicationUID'
-            try:
-                voPersonApplicationUID = data.attributes[ATTR_KEY]
-                match = re.search('^.+:(EXT\d+)$', voPersonApplicationUID)
-                uid = match.group(1)
-                data.attributes['uid'] = uid
-                msg = "Parsed {} and asserting value {} for uid"
-                msg.format(ATTR_KEY, uid)
-                satosa_logging(logger, logging.DEBUG, msg, context.state)
-            except (KeyError, AttributeError):
-                msg = "{} value did not match expected pattern"
-                msg = msg.format(ATTR_KEY),
-                satosa_logging(logger, logging.WARN, msg, context.state)
+            if ATTR_KEY in record["attributes"]:
+                try:
+                    voPersonApplicationUID = record["attributes"][ATTR_KEY][0]
+                    match = re.search('^.+:(EXT\d+)$', voPersonApplicationUID)
+                    uid = match.group(1)
+                    data.attributes['uid'] = uid
+                    msg = "Parsed {} and asserting value {} for uid"
+                    msg.format(ATTR_KEY, uid)
+                    satosa_logging(logger, logging.DEBUG, msg, context.state)
+                except (KeyError, AttributeError) as e:
+                    msg = "{} value did not match expected pattern: {}"
+                    msg = msg.format(ATTR_KEY, e)
+                    satosa_logging(logger, logging.WARN, msg, context.state)
 
         else:
             satosa_logging(logger, logging.WARN, "No record found in LDAP so no attributes will be added", context.state)
