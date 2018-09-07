@@ -26,6 +26,7 @@ import copy
 import logging
 import ldap3
 import urllib
+import re
 
 from ldap3.core.exceptions import LDAPException
 
@@ -507,6 +508,23 @@ class NyuLangoneAttributeStore(satosa.micro_services.base.ResponseMicroService):
             # Populate input for NameID if configured. SATOSA core does the hashing of input
             # to create a persistent NameID.
             self._populate_input_for_name_id(config, record, context, data)
+
+            # If the voPersonApplicationUID attribute is populated we need to
+            # use it to populate uid before asserting uid.
+            #
+            # TODO When attribute options are configured for the LDAP
+            # Provisioner in COmanage change voPersonApplicationUID to 
+            # voPersonApplicationUID;app-rn.
+            ATTR_KEY = 'voPersonApplicationUID'
+            try:
+                voPersonApplicationUID = data.attributes[ATTR_KEY]
+                match = re.search('^.+:(EXT\d+)$', voPersonApplicationUID)
+                uid = match.group(1)
+                data.attributes['uid'] = uid
+            except (KeyError, AttributeError):
+                msg = "{} value did not match expected pattern"
+                msg = msg.format(ATTR_KEY),
+                satosa_logging(logger, logging.WARN, msg, context.state)
 
         else:
             satosa_logging(logger, logging.WARN, "No record found in LDAP so no attributes will be added", context.state)
