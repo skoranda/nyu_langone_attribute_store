@@ -525,7 +525,7 @@ class NyuLangoneAttributeStore(satosa.micro_services.base.ResponseMicroService):
                     msg = "Parsed {} and asserting value {} for uid"
                     msg.format(ATTR_KEY, uid)
                     satosa_logging(logger, logging.DEBUG, msg, context.state)
-                except (KeyError, AttributeError) as e:
+                except (KeyError, AttributeError, IndexError) as e:
                     msg = "{} value did not match expected pattern: {}"
                     msg = msg.format(ATTR_KEY, e)
                     satosa_logging(logger, logging.WARN, msg, context.state)
